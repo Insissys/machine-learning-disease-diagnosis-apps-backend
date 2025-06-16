@@ -20,11 +20,12 @@ func Predict(request *model.Request) (*model.Response, error) {
 		SetHeader("Content-Type", "application/json")
 
 	var response model.Response
+	endpoint := "predict"
 
 	resp, err := client.R().
 		SetBody(request).
 		SetResult(&response).
-		Post("/api/v1/predict")
+		Post(endpoint)
 
 	if err != nil {
 		return nil, err

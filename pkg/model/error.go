@@ -13,3 +13,10 @@ func StatusInternalServerError(msg string) ErrorResponse {
 		Message: msg,
 	}
 }
+
+func StatusBadRequestError(msg string) ErrorResponse {
+	return ErrorResponse{
+		Code:    http.StatusBadRequest,
+		Message: msg,
+	}
+}

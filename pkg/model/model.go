@@ -1,7 +1,7 @@
 package model
 
 type Request struct {
-	Symptoms []string `json:"symptoms" binding:"required"` // binding for Gin validation
+	Complaint string `json:"complaint" binding:"required"` // binding for Gin validation
 }
 
 type DiseasePrediction struct {

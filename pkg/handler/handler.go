@@ -12,7 +12,7 @@ func Predict(c *gin.Context) {
 	var request *model.Request = &model.Request{}
 
 	if err := c.ShouldBindJSON(request); err != nil {
-		c.JSON(http.StatusInternalServerError, model.StatusInternalServerError(err.Error()))
+		c.JSON(http.StatusBadRequest, model.StatusBadRequestError("error while binding request json."))
 		return
 	}
 
