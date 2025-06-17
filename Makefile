@@ -6,3 +6,6 @@ tidy:
 
 migrate:
 	@go run cmd/migration/main.go
+
+config:
+	@go run cmd/config/main.go
