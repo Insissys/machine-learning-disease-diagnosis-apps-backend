@@ -9,9 +9,10 @@ import (
 
 type Configuration struct {
 	Config struct {
-		Server   Server   `yaml:"server"`
-		Client   Client   `yaml:"client"`
-		Database Database `yaml:"database"`
+		JWTSECRET []byte   `yaml:"-"`
+		Server    Server   `yaml:"server"`
+		Client    Client   `yaml:"client"`
+		Database  Database `yaml:"database"`
 	} `yaml:"config"`
 }
 
@@ -54,7 +55,9 @@ func LoadConfig() {
 		log.Fatalln("failed to unmarshal config:", err)
 	}
 
-	log.Printf("Config loaded: %+v\n", GlobalConfig)
+	log.Printf("%+v\n", GlobalConfig)
+
+	GlobalConfig.Config.JWTSECRET = []byte(os.Getenv("JWT_SECRET"))
 }
 
 func GetConfig() *Configuration {

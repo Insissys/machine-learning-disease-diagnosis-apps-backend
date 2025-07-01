@@ -17,7 +17,7 @@ func main() {
 
 	table := migration.GetTable()
 	// Auto migrate models
-	err := database.AutoMigrate(
+	err := database.DropTable(
 		table...,
 	)
 	if err != nil {
