@@ -20,6 +20,7 @@ RUN apk add --no-cache ca-certificates tzdata gettext
 WORKDIR /root/
 
 COPY --from=builder /app/server .
+COPY --from=builder /app/migrate . 
 
 COPY internal/config/config.yml.template ./internal/config/config.yml.template
 
