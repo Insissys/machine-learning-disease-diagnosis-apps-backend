@@ -3,6 +3,7 @@ run:
 
 build:
 	@go build -o server ./cmd/server/main.go
+	@go build -o migrate ./cmd/migration/main.go
 
 tidy:
 	@go mod tidy
