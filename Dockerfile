@@ -15,7 +15,7 @@ RUN make build
 
 FROM alpine:latest
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata gettext
 
 WORKDIR /root/
 
