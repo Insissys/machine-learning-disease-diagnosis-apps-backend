@@ -34,7 +34,7 @@ type User struct {
 	Email     string    `json:"email" binding:"required"`
 	Role      string    `json:"role" binding:"required"`
 	Password  string    `json:"password" binding:"required"`
-	IsActive  bool      `json:"-"`
+	IsActive  bool      `json:"isactive"`
 	Expired   time.Time `json:"expired"`
 	GroupID   uint      `json:"groupId" binding:"required"`
 	GroupName string    `json:"officename"`

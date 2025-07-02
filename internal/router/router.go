@@ -27,5 +27,11 @@ func SetupRouter() *gin.Engine {
 
 	protected.GET("/users/me", handler.UsersMe)
 
+	protected.GET("/users", handler.GetUsers)
+	protected.POST("/users", handler.StoreUser)
+	protected.PATCH("/users/:id", handler.PatchUser)
+	protected.PATCH("/users/activate/:id", handler.ActivateUser)
+	protected.DELETE("/users/:id", handler.DestroyUser)
+
 	return r
 }

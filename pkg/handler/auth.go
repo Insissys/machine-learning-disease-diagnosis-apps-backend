@@ -217,7 +217,7 @@ func Register(c *gin.Context) {
 	}
 
 	database := container.NewContainer()
-	err := database.Users.StoreUser(input)
+	err := database.Users.RegisterUser(input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return

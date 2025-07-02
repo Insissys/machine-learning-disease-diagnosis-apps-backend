@@ -7,7 +7,12 @@ import (
 
 type DatabaseUsersRepository interface {
 	GetUser(request *model.LoginRequest) (*model.User, error)
-	StoreUser(request *model.RegisterRequest) error
+	GetUsers(request string) ([]model.User, error)
+	RegisterUser(request *model.RegisterRequest) error
+	StoreUser(request model.User) error
+	PatchUser(request string, data model.User) error
+	DestroyUser(request string) error
+	ActivateUser(request string, isActive bool) error
 }
 
 type DatabaseAuthRepository interface {
