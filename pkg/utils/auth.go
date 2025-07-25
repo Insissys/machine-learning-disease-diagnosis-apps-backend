@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/config"
+	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/database/migration"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/model"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/repository"
 )
@@ -22,8 +23,8 @@ func GenerateTokens(data model.User, repo repository.DatabaseAuthRepository) (st
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
 		Email:   data.Email,
-		Role:    data.Role,
-		GroupID: data.GroupID,
+		Role:    data.Role.Name,
+		GroupID: data.Group.ID,
 	}
 	accessJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	accessToken, err := accessJWT.SignedString(cfg.Config.JWTSECRET)
@@ -40,8 +41,8 @@ func GenerateTokens(data model.User, repo repository.DatabaseAuthRepository) (st
 			ID:        jti,
 		},
 		Email:   data.Email,
-		Role:    data.Role,
-		GroupID: data.GroupID,
+		Role:    data.Role.Name,
+		GroupID: data.Group.ID,
 		Revoked: false,
 	}
 	refreshJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
@@ -51,7 +52,12 @@ func GenerateTokens(data model.User, repo repository.DatabaseAuthRepository) (st
 	}
 
 	// Store refresh token in DB
-	err = repo.StoreRefreshToken(refreshClaims)
+	err = repo.StoreRefreshToken(&migration.Token{
+		ID:      refreshClaims.ID,
+		User:    refreshClaims.Email,
+		Expired: refreshClaims.ExpiresAt.Time,
+		Revoked: refreshClaims.Revoked,
+	})
 	if err != nil {
 		return "", "", err
 	}

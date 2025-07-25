@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type Request struct {
 	Complaint string `json:"complaint" binding:"required"` // binding for Gin validation
 }
@@ -16,36 +14,14 @@ type Response struct {
 }
 
 type RegisterRequest struct {
-	GroupName string `json:"officename" binding:"required"`
-	Address   string `json:"address" binding:"required"`
-	Name      string `json:"name" binding:"required"`
-	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required"`
+	OfficeName string `json:"officename" binding:"required"`
+	Address    string `json:"address" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+	Email      string `json:"email" binding:"required"`
+	Password   string `json:"password" binding:"required"`
 }
 
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
-}
-
-type User struct {
-	ID        uint      `json:"id"`
-	Name      string    `json:"name" binding:"required"`
-	Email     string    `json:"email" binding:"required"`
-	Role      string    `json:"role" binding:"required"`
-	Password  string    `json:"password" binding:"required"`
-	IsActive  bool      `json:"isactive"`
-	Expired   time.Time `json:"expired"`
-	GroupID   uint      `json:"groupId" binding:"required"`
-	GroupName string    `json:"officename"`
-	Address   string    `json:"address"`
-}
-
-type Patient struct {
-	ID            uint   `json:"id"`
-	MedicalRecord string `json:"medicalRecord" binding:"required"`
-	Name          string `json:"name" binding:"required"`
-	Gender        string `json:"gender" binding:"required"`
-	BirthDate     string `json:"birthDate" binding:"required"`
-	GroupID       uint   `json:"groupId"`
 }

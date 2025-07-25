@@ -17,7 +17,9 @@ func GetTable() []any {
 		&Roles{},
 		&Patient{},
 		&MedicalRecord{},
-		&DoctorFeedback{})
+		&DoctorFeedback{},
+		&Registration{},
+	)
 
 	return table
 }
@@ -39,7 +41,9 @@ type Group struct {
 type ActivityLog struct {
 	gorm.Model
 
-	UserID  uint   `gorm:"not null"`
+	UserID uint `gorm:"not null"`
+	User   User
+
 	Action  string `gorm:"not null;size:50"`
 	Details string `gorm:"size:1000"`
 }
@@ -60,7 +64,7 @@ type User struct {
 	RoleID uint `gorm:"not null"`
 	Role   Roles
 
-	IsActive *bool     `gorm:"not null;size:1"`
+	IsActive *bool     `gorm:"not null"`
 	Expired  time.Time `gorm:"not null;size:50"`
 
 	GroupID uint `gorm:"not null"`
@@ -70,10 +74,10 @@ type User struct {
 type Patient struct {
 	gorm.Model
 
-	MedicalRecord *string `gorm:"uniqueIndex;size:50"`
-	Name          string  `gorm:"not null;size:100"`
-	Gender        string  `gorm:"not null;size:10"`
-	BirthDate     string  `gorm:"not null;size:10"`
+	MedicalRecordNumber *string   `gorm:"uniqueIndex;size:50"`
+	Name                string    `gorm:"not null;size:100"`
+	Gender              string    `gorm:"not null;size:10"`
+	BirthDate           time.Time `gorm:"not null;size:50"`
 
 	GroupID uint `gorm:"not null"`
 	Group   Group
@@ -82,17 +86,35 @@ type Patient struct {
 type MedicalRecord struct {
 	gorm.Model
 
-	PatientID    uint   `gorm:"not null"`
-	Interrogator string `gorm:"not null;size:100"`
-	Diagnosis    string `gorm:"not null;size:1000"`
-	Predictions  string `gorm:"not null;size:1000"`
+	PatientID uint `gorm:"not null"`
+	Patient   Patient
+
+	InterrogatorID uint `gorm:"not null"`
+	Interrogator   User `gorm:"foreignKey:InterrogatorID"`
+
+	Diagnosis   string `gorm:"not null;size:1000"`
+	Predictions string `gorm:"not null;size:1000"`
 }
 
 type DoctorFeedback struct {
 	gorm.Model
 
-	MedicalRecordID uint   `gorm:"not null;uniqueIndex"`
-	Interrogator    string `gorm:"not null;size:100"`
-	Response        string `gorm:"not null;size:1000"`
-	Approved        *bool
+	MedicalRecordID uint `gorm:"not null;uniqueIndex"`
+	MedicalRecord   MedicalRecord
+
+	InterrogatorID uint `gorm:"not null"`
+	Interrogator   User `gorm:"foreignKey:InterrogatorID"`
+
+	Response string `gorm:"not null;size:1000"`
+	Approved *bool
+}
+
+type Registration struct {
+	gorm.Model
+
+	RegistrationNumber *string `gorm:"uniqueIndex;size:50"`
+	PatientID          uint    `gorm:"not null"`
+	Patient            Patient
+	GroupID            uint `gorm:"not null"`
+	Group              Group
 }

@@ -3,7 +3,6 @@ package database
 import (
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/connection/db"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/database/migration"
-	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/model"
 )
 
 type DatabaseAuth struct{}
@@ -23,11 +22,11 @@ func (a *DatabaseAuth) GetRefreshToken(id string) (*migration.Token, error) {
 	return token, nil
 }
 
-func (a *DatabaseAuth) StoreRefreshToken(token model.CustomClaims) error {
+func (a *DatabaseAuth) StoreRefreshToken(token *migration.Token) error {
 	data := &migration.Token{
 		ID:      token.ID,
-		User:    token.Email,
-		Expired: token.ExpiresAt.Time,
+		User:    token.User,
+		Expired: token.Expired,
 		Revoked: token.Revoked,
 	}
 	err := db.Gorm.Debug().Create(&data).Error
