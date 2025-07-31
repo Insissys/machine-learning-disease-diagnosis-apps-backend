@@ -42,7 +42,7 @@ func (*DatabaseRegistrations) StoreRegistration(request *migration.Registration)
 	// 	GroupID:             request.GroupID,
 	// }
 
-	// err = db.Gorm.Debug().Create(&data).Error
+	// err = db.Gorm.Create(&data).Error
 	// if err != nil {
 	// 	return err
 	// }
@@ -65,12 +65,12 @@ func (*DatabaseRegistrations) PatchRegistration(request string, data *migration.
 	// 	GroupID:             data.GroupID,
 	// }
 
-	// err = db.Gorm.Debug().Where("id = ?", request).First(&patient).Error
+	// err = db.Gorm.Where("id = ?", request).First(&patient).Error
 	// if err != nil {
 	// 	return err
 	// }
 
-	// err = db.Gorm.Debug().Model(patient).Updates(d).Error
+	// err = db.Gorm.Model(patient).Updates(d).Error
 	// if err != nil {
 	// 	return err
 	// }
@@ -78,7 +78,7 @@ func (*DatabaseRegistrations) PatchRegistration(request string, data *migration.
 }
 
 func (*DatabaseRegistrations) DestroyRegistration(request string) error {
-	err := db.Gorm.Debug().Delete(&migration.Registration{}, request).Error
+	err := db.Gorm.Delete(&migration.Registration{}, request).Error
 	if err != nil {
 		return err
 	}

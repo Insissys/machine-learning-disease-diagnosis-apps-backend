@@ -14,7 +14,7 @@ func NewDatabaseAuth() *DatabaseAuth {
 func (a *DatabaseAuth) GetRefreshToken(id string) (*migration.Token, error) {
 	var token *migration.Token
 
-	err := db.Gorm.Debug().Where("id = ?", id).First(&token).Error
+	err := db.Gorm.Where("id = ?", id).First(&token).Error
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (a *DatabaseAuth) StoreRefreshToken(token *migration.Token) error {
 		Expired: token.Expired,
 		Revoked: token.Revoked,
 	}
-	err := db.Gorm.Debug().Create(&data).Error
+	err := db.Gorm.Create(&data).Error
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (a *DatabaseAuth) StoreRefreshToken(token *migration.Token) error {
 }
 
 func (a *DatabaseAuth) UpdateRefreshToken(token *migration.Token) error {
-	err := db.Gorm.Debug().Where("id = ?", token.ID).Save(token).Error
+	err := db.Gorm.Where("id = ?", token.ID).Save(token).Error
 	if err != nil {
 		return err
 	}

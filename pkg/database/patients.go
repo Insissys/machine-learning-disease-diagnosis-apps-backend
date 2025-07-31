@@ -1,8 +1,6 @@
 package database
 
 import (
-	"time"
-
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/connection/db"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/database/migration"
 )
@@ -30,20 +28,15 @@ func (*DatabasePatients) GetPatients(groupID uint) ([]migration.Patient, error) 
 }
 
 func (*DatabasePatients) StorePatient(request *migration.Patient) error {
-	birthdate, err := time.Parse("2006-01-02", request.BirthDate)
-	if err != nil {
-		return err
-	}
-
 	data := &migration.Patient{
-		MedicalRecordNumber: &request.MedicalRecord,
+		MedicalRecordNumber: request.MedicalRecordNumber,
 		Name:                request.Name,
 		Gender:              request.Gender,
-		BirthDate:           birthdate,
+		BirthDate:           request.BirthDate,
 		GroupID:             request.GroupID,
 	}
 
-	err = db.Gorm.Debug().Create(&data).Error
+	err := db.Gorm.Create(&data).Error
 	if err != nil {
 		return err
 	}
@@ -53,25 +46,20 @@ func (*DatabasePatients) StorePatient(request *migration.Patient) error {
 func (*DatabasePatients) PatchPatient(request string, data *migration.Patient) error {
 	var patient *migration.Patient
 
-	birthdate, err := time.Parse("2006-01-02", data.BirthDate)
-	if err != nil {
-		return err
-	}
-
 	d := &migration.Patient{
-		MedicalRecordNumber: &data.MedicalRecord,
+		MedicalRecordNumber: data.MedicalRecordNumber,
 		Name:                data.Name,
 		Gender:              data.Gender,
-		BirthDate:           birthdate,
+		BirthDate:           data.BirthDate,
 		GroupID:             data.GroupID,
 	}
 
-	err = db.Gorm.Debug().Where("id = ?", request).First(&patient).Error
+	err := db.Gorm.Where("id = ?", request).First(&patient).Error
 	if err != nil {
 		return err
 	}
 
-	err = db.Gorm.Debug().Model(patient).Updates(d).Error
+	err = db.Gorm.Model(patient).Updates(d).Error
 	if err != nil {
 		return err
 	}
@@ -79,7 +67,7 @@ func (*DatabasePatients) PatchPatient(request string, data *migration.Patient) e
 }
 
 func (*DatabasePatients) DestroyPatient(request string) error {
-	err := db.Gorm.Debug().Delete(&migration.Patient{}, request).Error
+	err := db.Gorm.Delete(&migration.Patient{}, request).Error
 	if err != nil {
 		return err
 	}

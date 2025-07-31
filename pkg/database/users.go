@@ -79,29 +79,11 @@ func (d *DatabaseUsers) RegisterUser(request *migration.User) error {
 
 func (d *DatabaseUsers) GetUsers(groupId string) ([]migration.User, error) {
 	db := db.Gorm
-	var users []migration.User
+	var response []migration.User
 
-	err := db.Preload("Group").Preload("Role").Where("group_id = ?", groupId).Find(&users).Error
+	err := db.Preload("Group").Preload("Role").Where("group_id = ?", groupId).Find(&response).Error
 	if err != nil {
 		return nil, err
-	}
-
-	var response []migration.User
-	for _, user := range users {
-		if user.Role.Name == "superadmin" {
-			continue // Skip superadmin users
-		}
-		response = append(response, migration.User{
-			ID:        user.ID,
-			Name:      user.Name,
-			Email:     user.Email,
-			Role:      user.Role.Name,
-			GroupID:   user.Group.ID,
-			Expired:   user.Expired,
-			GroupName: user.Group.Name,
-			Address:   user.Group.Address,
-			IsActive:  *user.IsActive,
-		})
 	}
 
 	return response, nil
@@ -111,10 +93,11 @@ func (d *DatabaseUsers) StoreUser(request *migration.User) error {
 	db := db.Gorm
 
 	var role migration.Roles
-	err := db.Where("name = ?", request.Role).First(&role).Error
+	err := db.Where("name = ?", request.Role.Name).First(&role).Error
 	if err != nil {
 		return err
 	}
+
 	data := &migration.User{
 		Name:     request.Name,
 		Email:    request.Email,
@@ -125,7 +108,7 @@ func (d *DatabaseUsers) StoreUser(request *migration.User) error {
 		GroupID:  request.GroupID,
 	}
 
-	err = db.Debug().Create(&data).Error
+	err = db.Create(&data).Error
 	if err != nil {
 		return err
 	}
@@ -142,12 +125,17 @@ func (d *DatabaseUsers) PatchUser(id string, data *migration.User) error {
 		return err
 	}
 
+	var role migration.Roles
+	err = db.Where("name = ?", data.Role.Name).First(&role).Error
+	if err != nil {
+		return err
+	}
+
 	u := migration.User{
 		Name:     data.Name,
 		Email:    data.Email,
-		IsActive: &data.IsActive,
-		Role:     migration.Roles{Name: data.Role},
-		GroupID:  data.GroupID,
+		IsActive: data.IsActive,
+		Role:     role,
 	}
 
 	err = db.Model(&user).Updates(&u).Error
@@ -159,7 +147,7 @@ func (d *DatabaseUsers) PatchUser(id string, data *migration.User) error {
 }
 
 func (d *DatabaseUsers) DestroyUser(id string) error {
-	err := db.Gorm.Debug().Delete(&migration.User{}, id).Error
+	err := db.Gorm.Delete(&migration.User{}, id).Error
 	if err != nil {
 		return err
 	}

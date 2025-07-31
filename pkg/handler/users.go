@@ -117,13 +117,8 @@ func GetUsers(c *gin.Context) {
 }
 
 func StoreUser(c *gin.Context) {
-	var user struct {
-		ID       uint   `json:"id"`
-		Name     string `json:"name" binding:"required"`
-		Email    string `json:"email" binding:"required"`
-		Role     string `json:"role" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
+	var user model.User
+
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid request body"})
 		return
@@ -131,13 +126,19 @@ func StoreUser(c *gin.Context) {
 
 	db := container.NewContainer()
 
-	data := model.User{
-		Name:     user.Name,
-		Email:    user.Email,
-		Role:     user.Role,
+	data := &migration.User{
+		Name:  user.Name,
+		Email: user.Email,
+		Role: migration.Roles{
+			Name: user.Role.Name,
+		},
 		Password: user.Password,
-		IsActive: false,                       // Default to active
-		GroupID:  c.MustGet("groupId").(uint), // Get group ID
+		IsActive: &user.IsActive,
+		Group: migration.Group{
+			Model: gorm.Model{
+				ID: c.MustGet("groupId").(uint),
+			},
+		},
 	}
 	if err := db.Users.StoreUser(data); err != nil {
 		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
@@ -151,6 +152,7 @@ func StoreUser(c *gin.Context) {
 
 func PatchUser(c *gin.Context) {
 	var user model.User
+
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid request body"})
 		return
@@ -159,7 +161,14 @@ func PatchUser(c *gin.Context) {
 	id := c.Param("id")
 	db := container.NewContainer()
 
-	if err := db.Users.PatchUser(id, user); err != nil {
+	if err := db.Users.PatchUser(id, &migration.User{
+		Name:     user.Name,
+		Email:    user.Email,
+		IsActive: &user.IsActive,
+		Role: migration.Roles{
+			Name: user.Role.Name,
+		},
+	}); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, model.ApiResponse{Message: "User not found"})
 			return
@@ -192,9 +201,8 @@ func DestroyUser(c *gin.Context) {
 }
 
 func ActivateUser(c *gin.Context) {
-	var data struct {
-		IsActive bool `json:"isactive"`
-	}
+	var data model.User
+
 	if err := c.ShouldBindJSON(&data); err != nil {
 		c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid request body"})
 		return
