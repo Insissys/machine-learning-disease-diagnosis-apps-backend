@@ -7,7 +7,7 @@ import (
 type DatabaseUsersRepository interface {
 	GetUserById(request *migration.User) (*migration.User, error)
 	GetUserByEmail(request *migration.User) (*migration.User, error)
-	GetUsers(request string) ([]migration.User, error)
+	GetUsers(request string, roles []string) ([]migration.User, error)
 	RegisterUser(request *migration.User) error
 	StoreUser(request *migration.User) error
 	PatchUser(request string, data *migration.User) error

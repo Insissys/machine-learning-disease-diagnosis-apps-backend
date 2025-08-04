@@ -65,7 +65,7 @@ func (d *DatabaseUsers) RegisterUser(request *migration.User) error {
 			RoleID:   role.ID,
 			Expired:  time.Now().Add(30 * 24 * time.Hour),
 			GroupID:  request.Group.ID,
-			IsActive: &active,
+			IsActive: active,
 		}
 
 		// 4. Save User
@@ -77,11 +77,17 @@ func (d *DatabaseUsers) RegisterUser(request *migration.User) error {
 	})
 }
 
-func (d *DatabaseUsers) GetUsers(groupId string) ([]migration.User, error) {
+func (d *DatabaseUsers) GetUsers(groupId string, roles []string) ([]migration.User, error) {
 	db := db.Gorm
 	var response []migration.User
 
-	err := db.Preload("Group").Preload("Role").Where("group_id = ?", groupId).Find(&response).Error
+	err := db.
+		Joins("JOIN roles ON roles.id = users.role_id").
+		Where("users.group_id = ? AND roles.name IN (?)", groupId, roles).
+		Preload("Group").
+		Preload("Role").
+		Find(&response).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +169,7 @@ func (d *DatabaseUsers) ActivateUser(id string, isActive bool) error {
 		return err
 	}
 
-	user.IsActive = &isActive
+	user.IsActive = isActive
 
 	err = db.Save(&user).Error
 	if err != nil {

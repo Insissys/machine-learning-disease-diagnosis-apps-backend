@@ -1,11 +1,14 @@
 package model
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Base struct {
-	ID        uint      `json:"-"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	ID        string     `json:"id,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 type Group struct {
@@ -39,10 +42,10 @@ type User struct {
 type Patient struct {
 	Base
 
-	MedicalRecordNumber string    `json:"medical_record_number,omitempty"`
-	Name                string    `json:"name"`
-	Gender              string    `json:"gender"`
-	BirthDate           time.Time `json:"birth_date"`
+	MedicalRecordNumber string   `json:"medical_record_number,omitempty"`
+	Name                string   `json:"name"`
+	Gender              string   `json:"gender"`
+	BirthDate           DateOnly `json:"birth_date"`
 
 	Group Group `json:"group"`
 }
@@ -50,7 +53,8 @@ type Patient struct {
 type MedicalRecord struct {
 	Base
 
-	Patient Patient `json:"patient"`
+	MedicalRecordNumber string  `json:"medical_record_number,omitempty"`
+	Patient             Patient `json:"patient"`
 
 	Interrogator User `json:"interrogator"`
 
@@ -74,7 +78,7 @@ type Registration struct {
 
 	RegistrationNumber string `json:"registration_number,omitempty"`
 
-	Patient Patient `json:"patient"`
+	MedicalRecord MedicalRecord `json:"medical_record"`
 
 	Group Group `json:"group"`
 }
@@ -86,4 +90,21 @@ type ActivityLog struct {
 
 	Action  string `json:"action"`
 	Details string `json:"details"`
+}
+
+type DateOnly struct {
+	time.Time
+}
+
+func (d *DateOnly) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" {
+		return nil
+	}
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return err
+	}
+	d.Time = t
+	return nil
 }

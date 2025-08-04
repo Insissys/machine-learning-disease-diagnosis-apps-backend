@@ -16,7 +16,7 @@ func (*DatabaseRegistrations) GetRegistrations(groupID uint) ([]migration.Regist
 
 	err := db.Gorm.
 		Where("group_id = ?", groupID).
-		Preload("Patient").
+		Preload("MedicalRecord").
 		Preload("Group").
 		Order("created_at DESC").
 		Find(&patients).Error

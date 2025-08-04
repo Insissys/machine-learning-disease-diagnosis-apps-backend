@@ -2,20 +2,22 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/database/migration"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/container"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/model"
+	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/utils"
 )
 
 // GET /api/patients
 func GetPatients(c *gin.Context) {
-	groupID := c.MustGet("groupId").(uint)
+	groupID := c.MustGet("groupId").(uint64)
 
 	database := container.NewContainer()
-	patients, err := database.Patients.GetPatients(groupID)
+	patients, err := database.Patients.GetPatients(uint(groupID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ApiResponse{
 			Message:  "Something went wrong",
@@ -31,19 +33,19 @@ func GetPatients(c *gin.Context) {
 	for _, v := range patients {
 		response = append(response, model.Patient{
 			Base: model.Base{
-				ID:        v.ID,
-				CreatedAt: v.CreatedAt,
-				UpdatedAt: v.UpdatedAt,
+				ID:        utils.EncryptUint64(uint64(v.ID)),
+				CreatedAt: &v.CreatedAt,
+				UpdatedAt: &v.UpdatedAt,
 			},
-			MedicalRecordNumber: *v.MedicalRecordNumber,
+			MedicalRecordNumber: v.MedicalRecordNumber,
 			Name:                v.Name,
 			Gender:              v.Gender,
-			BirthDate:           v.BirthDate,
+			BirthDate:           model.DateOnly{Time: v.BirthDate},
 			Group: model.Group{
 				Base: model.Base{
-					ID:        v.Group.ID,
-					CreatedAt: v.Group.CreatedAt,
-					UpdatedAt: v.Group.UpdatedAt,
+					ID:        utils.EncryptUint64(uint64(v.Group.ID)),
+					CreatedAt: &v.Group.CreatedAt,
+					UpdatedAt: &v.Group.UpdatedAt,
 				},
 				Name:    v.Group.Name,
 				Address: v.Group.Address,
@@ -54,7 +56,7 @@ func GetPatients(c *gin.Context) {
 	c.JSON(http.StatusOK, model.ApiResponse{
 		Message:  "Success Retrieve Patients",
 		Error:    nil,
-		Data:     patients,
+		Data:     response,
 		Metadata: nil,
 	})
 }
@@ -72,16 +74,17 @@ func StorePatient(c *gin.Context) {
 		return
 	}
 
-	input.Group.ID = c.MustGet("groupId").(uint)
+	groupId := c.MustGet("groupId").(uint64)
+	input.Group.ID = utils.EncryptUint64(groupId)
 
 	// 2. Call repository/service to add the patient
 	database := container.NewContainer()
 	if err := database.Patients.StorePatient(&migration.Patient{
-		MedicalRecordNumber: &input.MedicalRecordNumber,
+		MedicalRecordNumber: input.MedicalRecordNumber,
 		Name:                input.Name,
 		Gender:              input.Gender,
-		BirthDate:           input.BirthDate,
-		GroupID:             input.Group.ID,
+		BirthDate:           input.BirthDate.Time,
+		GroupID:             uint(utils.DecryptToUint64(input.Group.ID)),
 	}); err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "duplicate entry") {
 			c.JSON(http.StatusConflict, model.ApiResponse{
@@ -102,7 +105,8 @@ func StorePatient(c *gin.Context) {
 
 // PATCH /api/patients/:id
 func PatchPatient(c *gin.Context) {
-	id := c.Param("id")
+	encryptedBase64 := c.Param("id")
+	id := strconv.Itoa(int(utils.DecryptToUint64(encryptedBase64)))
 	var request model.Patient
 
 	if err := c.BindJSON(&request); err != nil {
@@ -112,10 +116,10 @@ func PatchPatient(c *gin.Context) {
 
 	database := container.NewContainer()
 	if err := database.Patients.PatchPatient(id, &migration.Patient{
-		MedicalRecordNumber: &request.MedicalRecordNumber,
+		MedicalRecordNumber: request.MedicalRecordNumber,
 		Name:                request.Name,
 		Gender:              request.Gender,
-		BirthDate:           request.BirthDate,
+		BirthDate:           request.BirthDate.Time,
 	}); err != nil {
 		c.JSON(http.StatusInternalServerError, model.ApiResponse{
 			Message: "Something went wrong",
@@ -128,7 +132,8 @@ func PatchPatient(c *gin.Context) {
 
 // DELETE /api/patients/:id
 func DestroyPatient(c *gin.Context) {
-	id := c.Param("id")
+	encryptedBase64 := c.Param("id")
+	id := strconv.Itoa(int(utils.DecryptToUint64(encryptedBase64)))
 
 	database := container.NewContainer()
 	if err := database.Patients.DestroyPatient(id); err != nil {

@@ -24,7 +24,7 @@ func GenerateTokens(data model.User, repo repository.DatabaseAuthRepository) (st
 		},
 		Email:   data.Email,
 		Role:    data.Role.Name,
-		GroupID: data.Group.ID,
+		GroupID: DecryptToUint64(data.Group.ID),
 	}
 	accessJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	accessToken, err := accessJWT.SignedString(cfg.Config.JWTSECRET)
@@ -42,7 +42,7 @@ func GenerateTokens(data model.User, repo repository.DatabaseAuthRepository) (st
 		},
 		Email:   data.Email,
 		Role:    data.Role.Name,
-		GroupID: data.Group.ID,
+		GroupID: DecryptToUint64(data.Group.ID),
 		Revoked: false,
 	}
 	refreshJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)

@@ -90,7 +90,7 @@ func Refresh(c *gin.Context) {
 		Role:  model.Roles{Name: user.Role.Name},
 		Group: model.Group{
 			Base: model.Base{
-				ID: user.GroupID,
+				ID: utils.EncryptUint64(uint64(user.GroupID)),
 			},
 		},
 	}, database.Auth)
@@ -129,7 +129,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if user.IsActive == nil || !*user.IsActive {
+	if !user.IsActive {
 		c.JSON(http.StatusForbidden, model.ApiResponse{Message: "User inactive"})
 		return
 	}
@@ -151,7 +151,7 @@ func Login(c *gin.Context) {
 		},
 		Group: model.Group{
 			Base: model.Base{
-				ID: user.GroupID,
+				ID: utils.EncryptUint64(uint64(user.GroupID)),
 			},
 		},
 	}, database.Auth)

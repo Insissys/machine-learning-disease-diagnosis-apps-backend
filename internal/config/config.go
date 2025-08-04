@@ -9,10 +9,11 @@ import (
 
 type Configuration struct {
 	Config struct {
-		JWTSECRET []byte   `yaml:"-"`
-		Server    Server   `yaml:"server"`
-		Client    Client   `yaml:"client"`
-		Database  Database `yaml:"database"`
+		JWTSECRET     []byte   `yaml:"-"`
+		EncryptionKey []byte   `yaml:"-"`
+		Server        Server   `yaml:"server"`
+		Client        Client   `yaml:"client"`
+		Database      Database `yaml:"database"`
 	} `yaml:"config"`
 }
 
@@ -58,6 +59,7 @@ func LoadConfig() {
 	log.Printf("%+v\n", GlobalConfig)
 
 	GlobalConfig.Config.JWTSECRET = []byte(os.Getenv("JWT_SECRET"))
+	GlobalConfig.Config.EncryptionKey = []byte(os.Getenv("ENCRYPTION_KEY")[:32])
 }
 
 func GetConfig() *Configuration {

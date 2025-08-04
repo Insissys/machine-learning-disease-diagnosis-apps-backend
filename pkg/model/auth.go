@@ -5,7 +5,7 @@ import "github.com/golang-jwt/jwt/v5"
 type CustomClaims struct {
 	Email   string
 	Role    string
-	GroupID uint
+	GroupID uint64
 	Revoked bool
 
 	jwt.RegisteredClaims

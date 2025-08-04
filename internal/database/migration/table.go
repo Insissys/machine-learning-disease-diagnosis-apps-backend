@@ -64,7 +64,7 @@ type User struct {
 	RoleID uint `gorm:"not null"`
 	Role   Roles
 
-	IsActive *bool     `gorm:"not null"`
+	IsActive bool      `gorm:"not null"`
 	Expired  time.Time `gorm:"not null;size:50"`
 
 	GroupID uint `gorm:"not null"`
@@ -74,7 +74,7 @@ type User struct {
 type Patient struct {
 	gorm.Model
 
-	MedicalRecordNumber *string   `gorm:"uniqueIndex;size:50"`
+	MedicalRecordNumber string    `gorm:"uniqueIndex;size:50"`
 	Name                string    `gorm:"not null;size:100"`
 	Gender              string    `gorm:"not null;size:10"`
 	BirthDate           time.Time `gorm:"not null;size:50"`
@@ -86,8 +86,9 @@ type Patient struct {
 type MedicalRecord struct {
 	gorm.Model
 
-	PatientID uint `gorm:"not null"`
-	Patient   Patient
+	MedicalRecordNumber string `gorm:"size:50"`
+	PatientID           uint   `gorm:"not null"`
+	Patient             Patient
 
 	InterrogatorID uint `gorm:"not null"`
 	Interrogator   User `gorm:"foreignKey:InterrogatorID"`
@@ -112,9 +113,9 @@ type DoctorFeedback struct {
 type Registration struct {
 	gorm.Model
 
-	RegistrationNumber *string `gorm:"uniqueIndex;size:50"`
-	PatientID          uint    `gorm:"not null"`
-	Patient            Patient
+	RegistrationNumber string `gorm:"uniqueIndex;size:50"`
+	MedicalRecordID    uint   `gorm:"not null;uniqueIndex"`
+	MedicalRecord      MedicalRecord
 	GroupID            uint `gorm:"not null"`
 	Group              Group
 }

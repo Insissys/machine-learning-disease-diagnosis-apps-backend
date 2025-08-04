@@ -29,11 +29,10 @@ func (*DatabasePatients) GetPatients(groupID uint) ([]migration.Patient, error) 
 
 func (*DatabasePatients) StorePatient(request *migration.Patient) error {
 	data := &migration.Patient{
-		MedicalRecordNumber: request.MedicalRecordNumber,
-		Name:                request.Name,
-		Gender:              request.Gender,
-		BirthDate:           request.BirthDate,
-		GroupID:             request.GroupID,
+		Name:      request.Name,
+		Gender:    request.Gender,
+		BirthDate: request.BirthDate,
+		GroupID:   request.GroupID,
 	}
 
 	err := db.Gorm.Create(&data).Error
@@ -47,11 +46,10 @@ func (*DatabasePatients) PatchPatient(request string, data *migration.Patient) e
 	var patient *migration.Patient
 
 	d := &migration.Patient{
-		MedicalRecordNumber: data.MedicalRecordNumber,
-		Name:                data.Name,
-		Gender:              data.Gender,
-		BirthDate:           data.BirthDate,
-		GroupID:             data.GroupID,
+		Name:      data.Name,
+		Gender:    data.Gender,
+		BirthDate: data.BirthDate,
+		GroupID:   data.GroupID,
 	}
 
 	err := db.Gorm.Where("id = ?", request).First(&patient).Error
