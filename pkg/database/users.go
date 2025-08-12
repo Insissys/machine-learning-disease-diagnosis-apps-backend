@@ -64,7 +64,7 @@ func (d *DatabaseUsers) RegisterUser(request *migration.User) error {
 			Password: utils.HashPassword(request.Password),
 			RoleID:   role.ID,
 			Expired:  time.Now().Add(30 * 24 * time.Hour),
-			GroupID:  request.Group.ID,
+			GroupID:  group.ID,
 			IsActive: active,
 		}
 
