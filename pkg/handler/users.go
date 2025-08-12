@@ -3,7 +3,8 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strconv"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/database/migration"
@@ -13,6 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// GET /api/users/me
 func UsersMe(c *gin.Context) {
 	email := c.MustGet("email").(string)
 	db := container.NewContainer()
@@ -23,7 +25,7 @@ func UsersMe(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "User not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -33,15 +35,14 @@ func UsersMe(c *gin.Context) {
 			CreatedAt: &user.CreatedAt,
 			UpdatedAt: &user.UpdatedAt,
 		},
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
+		Name:  user.Name,
+		Email: user.Email,
 		Role: model.Roles{
 			Name: user.Role.Name,
 		},
 		IsActive: user.IsActive,
 		Expired:  user.Expired,
-		Group: model.Group{
+		Group: &model.Group{
 			Base: model.Base{
 				ID:        utils.EncryptUint64(uint64(user.Group.ID)),
 				CreatedAt: &user.Group.CreatedAt,
@@ -60,6 +61,7 @@ func UsersMe(c *gin.Context) {
 	})
 }
 
+// GET /api/users
 func GetUsers(c *gin.Context) {
 	groupId := c.MustGet("groupId").(uint64)
 	roles := c.Query("name")
@@ -68,16 +70,23 @@ func GetUsers(c *gin.Context) {
 	if roles == "" {
 		rolesParam = append(rolesParam, []string{"admin", "doctor"}...)
 	} else {
-		rolesParam = append(rolesParam, roles)
+		re := regexp.MustCompile(`^[A-Za-z,]+$`)
+		accepted := re.MatchString(roles)
+		if !accepted {
+			c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid query"})
+			return
+		}
+
+		splitted := strings.Split(roles, ",")
+
+		rolesParam = append(rolesParam, splitted...)
 	}
 
 	db := container.NewContainer()
 
-	groupIdStr := strconv.Itoa(int(groupId))
-
-	users, err := db.Users.GetUsers(groupIdStr, rolesParam)
+	users, err := db.Users.GetUsers(groupId, rolesParam)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -90,15 +99,14 @@ func GetUsers(c *gin.Context) {
 				CreatedAt: &v.CreatedAt,
 				UpdatedAt: &v.UpdatedAt,
 			},
-			Name:     v.Name,
-			Email:    v.Email,
-			Password: v.Password,
+			Name:  v.Name,
+			Email: v.Email,
 			Role: model.Roles{
 				Name: v.Role.Name,
 			},
 			IsActive: v.IsActive,
 			Expired:  v.Expired,
-			Group: model.Group{
+			Group: &model.Group{
 				Base: model.Base{
 					ID:        utils.EncryptUint64(uint64(v.Group.ID)),
 					CreatedAt: &v.Group.CreatedAt,
@@ -118,6 +126,7 @@ func GetUsers(c *gin.Context) {
 	})
 }
 
+// POST /api/users
 func StoreUser(c *gin.Context) {
 	var user model.User
 
@@ -136,14 +145,10 @@ func StoreUser(c *gin.Context) {
 		},
 		Password: user.Password,
 		IsActive: user.IsActive,
-		Group: migration.Group{
-			Model: gorm.Model{
-				ID: uint(c.MustGet("groupId").(uint64)),
-			},
-		},
+		GroupID:  uint(c.MustGet("groupId").(uint64)),
 	}
 	if err := db.Users.StoreUser(data); err != nil {
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -152,6 +157,7 @@ func StoreUser(c *gin.Context) {
 	})
 }
 
+// PATCH /api/users/:id
 func PatchUser(c *gin.Context) {
 	var user model.User
 
@@ -160,7 +166,8 @@ func PatchUser(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
+	encryptedBase64 := c.Param("id")
+	id := utils.DecryptToUint64(encryptedBase64)
 	db := container.NewContainer()
 
 	if err := db.Users.PatchUser(id, &migration.User{
@@ -175,7 +182,7 @@ func PatchUser(c *gin.Context) {
 			c.JSON(http.StatusNotFound, model.ApiResponse{Message: "User not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -184,8 +191,10 @@ func PatchUser(c *gin.Context) {
 	})
 }
 
+// DELETE /api/users/:id
 func DestroyUser(c *gin.Context) {
-	id := c.Param("id")
+	encryptedBase64 := c.Param("id")
+	id := utils.DecryptToUint64(encryptedBase64)
 	db := container.NewContainer()
 
 	if err := db.Users.DestroyUser(id); err != nil {
@@ -193,7 +202,7 @@ func DestroyUser(c *gin.Context) {
 			c.JSON(http.StatusNotFound, model.ApiResponse{Message: "User not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -202,6 +211,7 @@ func DestroyUser(c *gin.Context) {
 	})
 }
 
+// PATCH /api/users/activate/:id
 func ActivateUser(c *gin.Context) {
 	var data model.User
 
@@ -210,7 +220,8 @@ func ActivateUser(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
+	encryptedBase64 := c.Param("id")
+	id := utils.DecryptToUint64(encryptedBase64)
 	db := container.NewContainer()
 
 	if err := db.Users.ActivateUser(id, data.IsActive); err != nil {
@@ -218,7 +229,7 @@ func ActivateUser(c *gin.Context) {
 			c.JSON(http.StatusNotFound, model.ApiResponse{Message: "User not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 

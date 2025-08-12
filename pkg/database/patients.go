@@ -11,7 +11,7 @@ func NewDatabasePatients() *DatabasePatients {
 	return &DatabasePatients{}
 }
 
-func (*DatabasePatients) GetPatients(groupID uint) ([]migration.Patient, error) {
+func (*DatabasePatients) GetPatients(groupID uint64) ([]migration.Patient, error) {
 	var patients []migration.Patient
 
 	err := db.Gorm.
@@ -27,47 +27,43 @@ func (*DatabasePatients) GetPatients(groupID uint) ([]migration.Patient, error) 
 	return patients, nil
 }
 
-func (*DatabasePatients) StorePatient(request *migration.Patient) error {
-	data := &migration.Patient{
-		Name:      request.Name,
-		Gender:    request.Gender,
-		BirthDate: request.BirthDate,
-		GroupID:   request.GroupID,
+func (*DatabasePatients) GetPatientById(id uint64) (*migration.Patient, error) {
+	var patient *migration.Patient
+
+	err := db.Gorm.
+		Where("id = ?", id).
+		Preload("Group").
+		Find(&patient).Error
+
+	if err != nil {
+		return nil, err
 	}
 
-	err := db.Gorm.Create(&data).Error
+	return patient, nil
+}
+
+func (*DatabasePatients) StorePatient(request *migration.Patient) error {
+	err := db.Gorm.Create(&request).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (*DatabasePatients) PatchPatient(request string, data *migration.Patient) error {
-	var patient *migration.Patient
-
-	d := &migration.Patient{
+func (*DatabasePatients) PatchPatient(id uint64, data *migration.Patient) error {
+	updated := &migration.Patient{
 		Name:      data.Name,
 		Gender:    data.Gender,
 		BirthDate: data.BirthDate,
-		GroupID:   data.GroupID,
 	}
 
-	err := db.Gorm.Where("id = ?", request).First(&patient).Error
-	if err != nil {
-		return err
-	}
-
-	err = db.Gorm.Model(patient).Updates(d).Error
+	err := db.Gorm.Model(&migration.Patient{}).Where("id = ?", id).Updates(updated).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (*DatabasePatients) DestroyPatient(request string) error {
-	err := db.Gorm.Delete(&migration.Patient{}, request).Error
-	if err != nil {
-		return err
-	}
-	return nil
+func (*DatabasePatients) DestroyPatient(id uint64) error {
+	return db.Gorm.Delete(&migration.Patient{}, id).Error
 }

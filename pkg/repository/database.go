@@ -7,12 +7,13 @@ import (
 type DatabaseUsersRepository interface {
 	GetUserById(request *migration.User) (*migration.User, error)
 	GetUserByEmail(request *migration.User) (*migration.User, error)
-	GetUsers(request string, roles []string) ([]migration.User, error)
+	GetUsers(groupId uint64, roles []string) ([]migration.User, error)
 	RegisterUser(request *migration.User) error
 	StoreUser(request *migration.User) error
-	PatchUser(request string, data *migration.User) error
-	DestroyUser(request string) error
-	ActivateUser(request string, isActive bool) error
+	PatchUser(id uint64, data *migration.User) error
+	DestroyUser(id uint64) error
+	ActivateUser(id uint64, isActive bool) error
+	GetUserGroup(request *migration.User) (*migration.Group, error)
 }
 
 type DatabaseAuthRepository interface {
@@ -22,15 +23,33 @@ type DatabaseAuthRepository interface {
 }
 
 type DatabasePatientsRepository interface {
-	GetPatients(groupID uint) ([]migration.Patient, error)
+	GetPatients(groupID uint64) ([]migration.Patient, error)
+	GetPatientById(id uint64) (*migration.Patient, error)
 	StorePatient(request *migration.Patient) error
-	PatchPatient(request string, data *migration.Patient) error
-	DestroyPatient(request string) error
+	PatchPatient(id uint64, data *migration.Patient) error
+	DestroyPatient(id uint64) error
 }
 
 type DatabaseRegistrations interface {
-	GetRegistrations(groupID uint) ([]migration.Registration, error)
+	GetRegistrations(groupID uint64) ([]migration.Registration, error)
 	StoreRegistration(request *migration.Registration) error
-	PatchRegistration(request string, data *migration.Registration) error
-	DestroyRegistration(request string) error
+	PatchRegistration(id uint64, data *migration.Registration) error
+	DestroyRegistration(id uint64) error
+}
+
+type DatabaseMedicalRecordRepository interface {
+	GetMedicalRecords(patientId uint64) ([]migration.MedicalRecord, error)
+	StoreMedicalRecord(request *migration.MedicalRecord) error
+	PatchMedicalRecord(id uint64, data *migration.MedicalRecord) error
+	DestroyMedicalRecord(id uint64) error
+}
+
+type DatabaseDoctorFeedbackRepository interface {
+	StoreDoctorFeedback(request *migration.DoctorFeedback) error
+	PatchDoctorFeedback(id uint64, data *migration.DoctorFeedback) error
+	DestroyDoctorFeedback(id uint64) error
+}
+
+type DatabaseQueueRepository interface {
+	GetQueue(userId, groupID *uint64) ([]migration.Registration, error)
 }

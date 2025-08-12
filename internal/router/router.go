@@ -36,7 +36,14 @@ func SetupRouter() *gin.Engine {
 	protected.GET("/patient/registration", handler.GetRegistrations)
 	protected.POST("/patient/registration", handler.StoreRegistration)
 	// protected.PATCH("/patient/registration/:id", handler.PatchRegistration)
-	// protected.DELETE("/patient/registration/:id", handler.DestroyRegistration)
+	protected.DELETE("/patient/registration/:id", handler.DestroyRegistration)
+
+	protected.GET("/patient/medicalrecord", handler.GetMedicalRecords)
+	protected.PATCH("/patient/medicalrecord/:id", handler.PatchMedicalRecord)
+
+	protected.GET("/patient/queue", handler.GetQueue)
+
+	protected.POST("/predict", handler.Predict)
 
 	return r
 }

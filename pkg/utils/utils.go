@@ -6,7 +6,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"fmt"
 	"io"
+	"strings"
+	"time"
 
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/internal/config"
 	"golang.org/x/crypto/bcrypt"
@@ -62,4 +65,21 @@ func DecryptToUint64(encoded string) uint64 {
 	stream.XORKeyStream(ciphertext, ciphertext)
 
 	return BytesToUint64(ciphertext)
+}
+
+func GenerateRegisterNumber(name string) string {
+	parts := strings.Fields(name)
+	initials := ""
+
+	for _, word := range parts {
+		initials += strings.ToUpper(string(word[0]))
+	}
+
+	timestamp := time.Now().Format("20060102-150405")
+
+	if initials == "" {
+		return timestamp
+	}
+
+	return fmt.Sprintf("%s-%s", initials, timestamp)
 }

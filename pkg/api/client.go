@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,31 +10,66 @@ import (
 	"github.com/sefazi/machine-learning-disease-diagnosis-apps-backend/pkg/model"
 )
 
-func Predict(request *model.Request) (*model.Response, error) {
+func Predict(request *model.PredictRequest) (*model.PredictResponse, error) {
 	cfg := config.GetConfig()
 	client := resty.New()
 
 	client.
-		SetBaseURL(cfg.Config.Client.URL).
-		SetTimeout(time.Duration(cfg.Config.Client.Timeout)*time.Second).
+		SetBaseURL(cfg.Config.Model.URL).
+		SetTimeout(time.Duration(cfg.Config.Model.Timeout)*time.Second).
 		SetRetryCount(3).
 		SetHeader("Content-Type", "application/json")
 
-	var response model.Response
+	response := &model.PredictResponse{}
 	endpoint := "predict"
 
-	resp, err := client.R().
-		SetBody(request).
-		SetResult(&response).
-		Post(endpoint)
-
+	resp, err := client.R().SetBody(request).SetResult(response).Post(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.IsError() {
-		return nil, fmt.Errorf("fastapi error: %s", resp.Status())
+	fmt.Println("HTTP Status:", resp.Status())
+	fmt.Println("Response:", resp.String())
+
+	if resp.StatusCode() == 422 {
+		return nil, errors.New(resp.Status())
 	}
 
-	return &response, nil
+	if resp.StatusCode() != 200 {
+		return nil, errors.New(resp.String())
+	}
+
+	return response, nil
+}
+
+func Translator(request *model.TranslateRequest) (*model.TranslateResponse, error) {
+	cfg := config.GetConfig()
+	client := resty.New()
+
+	client.
+		SetBaseURL(cfg.Config.Translator.URL).
+		SetTimeout(time.Duration(cfg.Config.Translator.Timeout)*time.Second).
+		SetRetryCount(3).
+		SetHeader("Content-Type", "application/json")
+
+	response := &model.TranslateResponse{}
+	endpoint := "translate"
+
+	resp, err := client.R().SetBody(request).SetResult(response).Post(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("HTTP Status:", resp.Status())
+	fmt.Println("Response:", resp.String())
+
+	if resp.StatusCode() != 200 {
+		return nil, errors.New(resp.String())
+	}
+
+	if response.TranslatedText == "" {
+		return nil, errors.New("can not translate")
+	}
+
+	return response, nil
 }

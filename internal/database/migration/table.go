@@ -74,7 +74,7 @@ type User struct {
 type Patient struct {
 	gorm.Model
 
-	MedicalRecordNumber string    `gorm:"uniqueIndex;size:50"`
+	MedicalRecordNumber string    `gorm:"size:50"`
 	Name                string    `gorm:"not null;size:100"`
 	Gender              string    `gorm:"not null;size:10"`
 	BirthDate           time.Time `gorm:"not null;size:50"`
@@ -93,29 +93,31 @@ type MedicalRecord struct {
 	InterrogatorID uint `gorm:"not null"`
 	Interrogator   User `gorm:"foreignKey:InterrogatorID"`
 
-	Diagnosis   string `gorm:"not null;size:1000"`
-	Predictions string `gorm:"not null;size:1000"`
+	FeedbackID uint           `gorm:"not null"`
+	Feedback   DoctorFeedback `gorm:"foreignKey:FeedbackID"`
+
+	Diagnosis   string `gorm:"not null;size:255"`
+	Predictions string `gorm:"not null;type:text"`
 }
 
 type DoctorFeedback struct {
 	gorm.Model
 
-	MedicalRecordID uint `gorm:"not null;uniqueIndex"`
-	MedicalRecord   MedicalRecord
-
 	InterrogatorID uint `gorm:"not null"`
 	Interrogator   User `gorm:"foreignKey:InterrogatorID"`
 
-	Response string `gorm:"not null;size:1000"`
-	Approved *bool
+	Response string `gorm:"not null;size:255"`
+	Approved bool
 }
 
 type Registration struct {
 	gorm.Model
 
 	RegistrationNumber string `gorm:"uniqueIndex;size:50"`
-	MedicalRecordID    uint   `gorm:"not null;uniqueIndex"`
-	MedicalRecord      MedicalRecord
-	GroupID            uint `gorm:"not null"`
-	Group              Group
+
+	MedicalRecordID uint `gorm:"not null;uniqueIndex"`
+	MedicalRecord   MedicalRecord
+
+	GroupID uint `gorm:"not null"`
+	Group   Group
 }

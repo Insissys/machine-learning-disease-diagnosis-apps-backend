@@ -12,7 +12,8 @@ type Configuration struct {
 		JWTSECRET     []byte   `yaml:"-"`
 		EncryptionKey []byte   `yaml:"-"`
 		Server        Server   `yaml:"server"`
-		Client        Client   `yaml:"client"`
+		Model         Client   `yaml:"model"`
+		Translator    Client   `yaml:"translator"`
 		Database      Database `yaml:"database"`
 	} `yaml:"config"`
 }

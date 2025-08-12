@@ -29,14 +29,14 @@ type User struct {
 
 	Name     string `json:"name"`
 	Email    string `json:"email"`
-	Password string `json:"-"`
+	Password string `json:"password,omitempty"`
 
 	Role Roles `json:"role"`
 
 	IsActive bool      `json:"is_active,omitempty"`
 	Expired  time.Time `json:"expired"`
 
-	Group Group `json:"group"`
+	Group *Group `json:"group,omitempty"`
 }
 
 type Patient struct {
@@ -47,7 +47,7 @@ type Patient struct {
 	Gender              string   `json:"gender"`
 	BirthDate           DateOnly `json:"birth_date"`
 
-	Group Group `json:"group"`
+	Group *Group `json:"group,omitempty"`
 }
 
 type MedicalRecord struct {
@@ -56,31 +56,31 @@ type MedicalRecord struct {
 	MedicalRecordNumber string  `json:"medical_record_number,omitempty"`
 	Patient             Patient `json:"patient"`
 
-	Interrogator User `json:"interrogator"`
+	Interrogator *User `json:"interrogator,omitempty"`
 
-	Diagnosis   string `json:"diagnosis"`
-	Predictions string `json:"predictions"`
+	Feedback *DoctorFeedback `json:"feedback,omitempty"`
+
+	Diagnosis   string `json:"diagnosis,omitempty"`
+	Predictions string `json:"predictions,omitempty"`
 }
 
 type DoctorFeedback struct {
 	Base
 
-	MedicalRecord MedicalRecord `json:"medical_record"`
+	Interrogator *User `json:"interrogator,omitempty"`
 
-	Interrogator User `json:"interrogator"`
-
-	Response string `json:"response"`
-	Approved bool   `json:"approved,omitempty"`
+	Response string `json:"response,omitempty"`
+	Approved bool   `json:"approved"`
 }
 
 type Registration struct {
 	Base
 
-	RegistrationNumber string `json:"registration_number,omitempty"`
+	RegistrationNumber string `json:"registration_number"`
 
 	MedicalRecord MedicalRecord `json:"medical_record"`
 
-	Group Group `json:"group"`
+	Group *Group `json:"group,omitempty"`
 }
 
 type ActivityLog struct {

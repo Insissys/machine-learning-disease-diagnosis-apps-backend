@@ -88,7 +88,7 @@ func Refresh(c *gin.Context) {
 	access, newRefresh, err := utils.GenerateTokens(model.User{
 		Email: user.Email,
 		Role:  model.Roles{Name: user.Role.Name},
-		Group: model.Group{
+		Group: &model.Group{
 			Base: model.Base{
 				ID: utils.EncryptUint64(uint64(user.GroupID)),
 			},
@@ -125,7 +125,7 @@ func Login(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "User not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Something went wrong"})
 		return
 	}
 
@@ -149,7 +149,7 @@ func Login(c *gin.Context) {
 		Role: model.Roles{
 			Name: user.Role.Name,
 		},
-		Group: model.Group{
+		Group: &model.Group{
 			Base: model.Base{
 				ID: utils.EncryptUint64(uint64(user.GroupID)),
 			},
@@ -235,7 +235,7 @@ func Logout(c *gin.Context) {
 func Register(c *gin.Context) {
 	var input model.RegisterRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid input", Error: err})
+		c.JSON(http.StatusBadRequest, model.ApiResponse{Message: "Invalid input"})
 		return
 	}
 
@@ -251,7 +251,7 @@ func Register(c *gin.Context) {
 		},
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Failed to register user", Error: err})
+		c.JSON(http.StatusInternalServerError, model.ApiResponse{Message: "Failed to register user"})
 		return
 	}
 

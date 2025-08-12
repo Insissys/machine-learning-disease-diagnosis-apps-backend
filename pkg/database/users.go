@@ -77,7 +77,7 @@ func (d *DatabaseUsers) RegisterUser(request *migration.User) error {
 	})
 }
 
-func (d *DatabaseUsers) GetUsers(groupId string, roles []string) ([]migration.User, error) {
+func (d *DatabaseUsers) GetUsers(groupId uint64, roles []string) ([]migration.User, error) {
 	db := db.Gorm
 	var response []migration.User
 
@@ -122,7 +122,7 @@ func (d *DatabaseUsers) StoreUser(request *migration.User) error {
 	return nil
 }
 
-func (d *DatabaseUsers) PatchUser(id string, data *migration.User) error {
+func (d *DatabaseUsers) PatchUser(id uint64, data *migration.User) error {
 	db := db.Gorm
 	var user migration.User
 
@@ -152,7 +152,7 @@ func (d *DatabaseUsers) PatchUser(id string, data *migration.User) error {
 	return nil
 }
 
-func (d *DatabaseUsers) DestroyUser(id string) error {
+func (d *DatabaseUsers) DestroyUser(id uint64) error {
 	err := db.Gorm.Delete(&migration.User{}, id).Error
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (d *DatabaseUsers) DestroyUser(id string) error {
 	return nil
 }
 
-func (d *DatabaseUsers) ActivateUser(id string, isActive bool) error {
+func (d *DatabaseUsers) ActivateUser(id uint64, isActive bool) error {
 	db := db.Gorm
 	var user migration.User
 
@@ -177,4 +177,16 @@ func (d *DatabaseUsers) ActivateUser(id string, isActive bool) error {
 	}
 
 	return nil
+}
+
+func (d *DatabaseUsers) GetUserGroup(request *migration.User) (*migration.Group, error) {
+	response := &migration.User{}
+
+	err := db.Gorm.Preload("Group").Where("id = ?", request.ID).
+		Or("email = ?", request.Email).
+		Or("group_id = ?", request.GroupID).First(&response).Error
+	if err != nil {
+		return nil, err
+	}
+	return &response.Group, nil
 }

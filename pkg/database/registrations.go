@@ -11,12 +11,14 @@ func NewDatabaseRegistrations() *DatabaseRegistrations {
 	return &DatabaseRegistrations{}
 }
 
-func (*DatabaseRegistrations) GetRegistrations(groupID uint) ([]migration.Registration, error) {
+func (*DatabaseRegistrations) GetRegistrations(groupID uint64) ([]migration.Registration, error) {
 	var patients []migration.Registration
 
 	err := db.Gorm.
+		Joins("JOIN medical_records ON medical_records.id = registrations.medical_record_id AND medical_records.diagnosis = ?", "").
 		Where("group_id = ?", groupID).
-		Preload("MedicalRecord").
+		Preload("MedicalRecord.Patient").
+		Preload("MedicalRecord.Interrogator.Role").
 		Preload("Group").
 		Order("created_at DESC").
 		Find(&patients).Error
@@ -29,58 +31,18 @@ func (*DatabaseRegistrations) GetRegistrations(groupID uint) ([]migration.Regist
 }
 
 func (*DatabaseRegistrations) StoreRegistration(request *migration.Registration) error {
-	// birthdate, err := time.Parse("2006-01-02", request.BirthDate)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// data := &migration.Registration{
-	// 	MedicalRecordNumber: &request.MedicalRecord,
-	// 	Name:                request.Name,
-	// 	Gender:              request.Gender,
-	// 	BirthDate:           birthdate,
-	// 	GroupID:             request.GroupID,
-	// }
-
-	// err = db.Gorm.Create(&data).Error
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
-
-func (*DatabaseRegistrations) PatchRegistration(request string, data *migration.Registration) error {
-	// var patient *migration.Registration
-
-	// birthdate, err := time.Parse("2006-01-02", data.BirthDate)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// d := &migration.Registration{
-	// 	MedicalRecordNumber: &data.MedicalRecord,
-	// 	Name:                data.Name,
-	// 	Gender:              data.Gender,
-	// 	BirthDate:           birthdate,
-	// 	GroupID:             data.GroupID,
-	// }
-
-	// err = db.Gorm.Where("id = ?", request).First(&patient).Error
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = db.Gorm.Model(patient).Updates(d).Error
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
-
-func (*DatabaseRegistrations) DestroyRegistration(request string) error {
-	err := db.Gorm.Delete(&migration.Registration{}, request).Error
+	err := db.Gorm.Create(&request).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (*DatabaseRegistrations) PatchRegistration(id uint64, data *migration.Registration) error {
+	// TODO: Coming Soon
+	return nil
+}
+
+func (*DatabaseRegistrations) DestroyRegistration(id uint64) error {
+	return db.Gorm.Delete(&migration.Registration{}, id).Error
 }

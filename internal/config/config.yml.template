@@ -2,11 +2,16 @@ config:
     server:
         host: ${APP_SERVER_HOST}
         port: ${APP_SERVER_PORT}
-    client:
-        url: ${APP_CLIENT_URL}
-        username: ${APP_CLIENT_USERNAME}
-        password: ${APP_CLIENT_PASSWORD}
-        timeout: ${APP_CLIENT_TIMEOUT}
+    model:
+        url: ${APP_MODEL_URL}
+        username: ${APP_MODEL_USERNAME}
+        password: ${APP_MODEL_PASSWORD}
+        timeout: ${APP_MODEL_TIMEOUT}
+    translator:
+        url: ${APP_TRANSLATOR_URL}
+        username: ${APP_TRANSLATOR_USERNAME}
+        password: ${APP_TRANSLATOR_PASSWORD}
+        timeout: ${APP_TRANSLATOR_TIMEOUT}
     database:
         username: ${APP_DATABASE_USERNAME}
         password: ${APP_DATABASE_PASSWORD}
